@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useCallback } from 'react';
 // Import the preloader video (folder name is literally "vidio").
-import preloaderVideo from '../vidio/WhatsApp Video 2026-10-29 at 10.47.56 AM.mp4';
+import preloaderVideo from '../vidio/gemini_generated_video_ca5fc4ae.mp4';
 
 // How long the splash video stays up before the home page opens (ms).
 const DURATION = 8000;
