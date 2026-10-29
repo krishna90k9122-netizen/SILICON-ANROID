@@ -57,7 +57,8 @@ const VideoPreloader = ({ onFinished }) => {
     <div className="fixed inset-0 z-50 bg-[#0A121E] flex items-center justify-center p-0 lg:p-6">
       {/* Phone-frame container — mirrors MainLayout's mobile-simulator on desktop.
           On real phones/Android (< lg) it stays full-screen. */}
-      <div className="relative w-full h-full bg-black overflow-hidden lg:max-w-[420px] lg:h-[880px] lg:max-h-[94vh] lg:rounded-[44px] lg:border-[10px] lg:border-[#102438] lg:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)]">
+      <div className="relative flex w-full h-full items-center justify-center bg-black overflow-hidden lg:max-w-[420px] lg:h-[880px] lg:max-h-[94vh] lg:rounded-[44px] lg:border-[10px] lg:border-[#102438] lg:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)]">
+        {/* Video: centered, ~68–75% width, object-contain (no crop/zoom), aspect ratio preserved. */}
         <video
           ref={videoRef}
           src={preloaderVideo}
@@ -66,7 +67,7 @@ const VideoPreloader = ({ onFinished }) => {
           loop
           playsInline
           preload="auto"
-          className="absolute inset-0 w-full h-full object-cover"
+          className="block max-w-[68%] sm:max-w-[72%] lg:max-w-[75%] max-h-[70%] sm:max-h-[75%] object-contain"
         />
       </div>
     </div>
