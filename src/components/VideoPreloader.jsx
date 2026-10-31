@@ -1,21 +1,27 @@
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef, useCallback, useState } from 'react';
 // Import the preloader video (folder name is literally "vidio").
-import preloaderVideo from '../vidio/gemini_generated_video_ca5fc4ae.mp4';
+import preloaderVideo from '../vidio/splash-nostar.mp4';
 
 // How long the splash video stays up before the home page opens (ms).
 const DURATION = 8000;
 
 /**
  * Full-screen video preloader shown on fresh app launch.
- * Plays muted + inline for DURATION (8s), then calls `onFinished` so the
- * parent (App) swaps in the home page.
+ * Plays for DURATION (8s), then calls `onFinished` so the parent (App)
+ * swaps in the home page.
  *
- * NOTE: this component is rendered OUTSIDE <BrowserRouter>, so it must
- * NOT use router hooks like useNavigate. App.jsx handles the transition.
+ * SOUND: browsers block AUDIBLE autoplay until the user interacts, so the
+ * video starts muted (guaranteed to play) and sound is unlocked on the first
+ * tap anywhere (or via the small "Tap for sound" button). On Android WebViews
+ * that allow audible autoplay, the first tap also just works.
+ *
+ * NOTE: rendered OUTSIDE <BrowserRouter> — do NOT use router hooks here.
  */
 const VideoPreloader = ({ onFinished }) => {
   const videoRef = useRef(null);
   const finishedRef = useRef(false);
+  const [muted, setMuted] = useState(true);
+  const [soundUnlocked, setSoundUnlocked] = useState(false);
 
   // Fire once: reveal the app.
   const finish = useCallback(() => {
@@ -24,18 +30,38 @@ const VideoPreloader = ({ onFinished }) => {
     if (typeof onFinished === 'function') onFinished();
   }, [onFinished]);
 
-  // Programmatic play() helps Android WebViews that ignore the autoplay attr.
+  // Turn sound on (safe to call after a user gesture).
+  const enableSound = useCallback(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = false;
+    v.volume = 1.0;
+    setMuted(false);
+    setSoundUnlocked(true);
+    const p = v.play();
+    if (p && typeof p.catch === 'function') p.catch(() => {});
+  }, []);
+
+  // Reliable muted autoplay so the splash always runs.
   useEffect(() => {
     const v = videoRef.current;
     if (v && typeof v.play === 'function') {
-      const playPromise = v.play();
-      if (playPromise && typeof playPromise.catch === 'function') {
-        playPromise.catch(() => {
+      const p = v.play();
+      if (p && typeof p.catch === 'function') {
+        p.catch(() => {
           /* Autoplay blocked — the timer still ends the splash. */
         });
       }
     }
   }, []);
+
+  // Unlock sound on the FIRST user interaction (browser autoplay policy).
+  useEffect(() => {
+    const unlock = () => enableSound();
+    const events = ['pointerdown', 'touchstart', 'click', 'keydown'];
+    events.forEach((e) => window.addEventListener(e, unlock, { passive: true }));
+    return () => events.forEach((e) => window.removeEventListener(e, unlock));
+  }, [enableSound]);
 
   // Reveal the home page after DURATION.
   useEffect(() => {
@@ -62,12 +88,25 @@ const VideoPreloader = ({ onFinished }) => {
           ref={videoRef}
           src={preloaderVideo}
           autoPlay
-          muted
+          muted={muted}
           loop
           playsInline
           preload="auto"
           className="absolute inset-0 w-full h-full object-cover"
         />
+
+        {/* "Tap for sound" affordance — hidden once sound is unlocked. */}
+        {!soundUnlocked && (
+          <button
+            type="button"
+            onClick={enableSound}
+            aria-label="Enable sound"
+            className="absolute top-4 right-4 z-10 flex items-center gap-1.5 rounded-full bg-black/55 backdrop-blur-md px-3 py-2 text-white/90 text-xs font-semibold border border-white/15 active:scale-95 transition-transform"
+          >
+            <span aria-hidden="true">🔇</span>
+            <span>Tap for sound</span>
+          </button>
+        )}
       </div>
     </div>
   );

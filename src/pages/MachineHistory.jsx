@@ -12,6 +12,7 @@ import {
 import { 
   CheckCircle2, 
   AlertTriangle,
+  Activity,
   Wrench,
   Download,
   ChevronRight
