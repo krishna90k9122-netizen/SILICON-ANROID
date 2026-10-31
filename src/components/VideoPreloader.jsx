@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback, useState } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 // Import the preloader video (folder name is literally "vidio").
 import preloaderVideo from '../vidio/splash-nostar.mp4';
 
@@ -10,18 +10,17 @@ const DURATION = 8000;
  * Plays for DURATION (8s), then calls `onFinished` so the parent (App)
  * swaps in the home page.
  *
- * SOUND: browsers block AUDIBLE autoplay until the user interacts, so the
- * video starts muted (guaranteed to play) and sound is unlocked on the first
- * tap anywhere (or via the small "Tap for sound" button). On Android WebViews
- * that allow audible autoplay, the first tap also just works.
+ * SOUND: we start the video with sound on. Wherever the environment allows
+ * audible autoplay (Android WebViews, returning visitors, etc.) sound plays
+ * every time. If a strict browser blocks it, we fall back to a silent play so
+ * the splash never breaks, and sound is unlocked on the FIRST interaction
+ * (no visible button).
  *
  * NOTE: rendered OUTSIDE <BrowserRouter> — do NOT use router hooks here.
  */
 const VideoPreloader = ({ onFinished }) => {
   const videoRef = useRef(null);
   const finishedRef = useRef(false);
-  const [muted, setMuted] = useState(true);
-  const [soundUnlocked, setSoundUnlocked] = useState(false);
 
   // Fire once: reveal the app.
   const finish = useCallback(() => {
@@ -30,38 +29,42 @@ const VideoPreloader = ({ onFinished }) => {
     if (typeof onFinished === 'function') onFinished();
   }, [onFinished]);
 
-  // Turn sound on (safe to call after a user gesture).
-  const enableSound = useCallback(() => {
-    const v = videoRef.current;
-    if (!v) return;
-    v.muted = false;
-    v.volume = 1.0;
-    setMuted(false);
-    setSoundUnlocked(true);
-    const p = v.play();
-    if (p && typeof p.catch === 'function') p.catch(() => {});
-  }, []);
-
-  // Reliable muted autoplay so the splash always runs.
+  // Start WITH sound; if audible autoplay is blocked, fall back to a muted
+  // play so the splash still runs (never a black screen).
   useEffect(() => {
     const v = videoRef.current;
-    if (v && typeof v.play === 'function') {
-      const p = v.play();
-      if (p && typeof p.catch === 'function') {
-        p.catch(() => {
-          /* Autoplay blocked — the timer still ends the splash. */
-        });
-      }
+    if (!v || typeof v.play !== 'function') return;
+    v.muted = false;
+    v.volume = 1.0;
+    const p = v.play();
+    if (p && typeof p.catch === 'function') {
+      p.catch(() => {
+        // Audible autoplay blocked → play silently instead.
+        v.muted = true;
+        const mp = v.play();
+        if (mp && typeof mp.catch === 'function') {
+          mp.catch(() => {
+            /* Autoplay blocked entirely — the timer still ends the splash. */
+          });
+        }
+      });
     }
   }, []);
 
-  // Unlock sound on the FIRST user interaction (browser autoplay policy).
+  // Unlock sound on the FIRST user interaction (silent — no visible button).
   useEffect(() => {
-    const unlock = () => enableSound();
+    const unlock = () => {
+      const v = videoRef.current;
+      if (!v) return;
+      v.muted = false;
+      v.volume = 1.0;
+      const p = v.play();
+      if (p && typeof p.catch === 'function') p.catch(() => {});
+    };
     const events = ['pointerdown', 'touchstart', 'click', 'keydown'];
     events.forEach((e) => window.addEventListener(e, unlock, { passive: true }));
     return () => events.forEach((e) => window.removeEventListener(e, unlock));
-  }, [enableSound]);
+  }, []);
 
   // Reveal the home page after DURATION.
   useEffect(() => {
@@ -88,25 +91,11 @@ const VideoPreloader = ({ onFinished }) => {
           ref={videoRef}
           src={preloaderVideo}
           autoPlay
-          muted={muted}
-          loop
           playsInline
+          loop
           preload="auto"
           className="absolute inset-0 w-full h-full object-cover"
         />
-
-        {/* "Tap for sound" affordance — hidden once sound is unlocked. */}
-        {!soundUnlocked && (
-          <button
-            type="button"
-            onClick={enableSound}
-            aria-label="Enable sound"
-            className="absolute top-4 right-4 z-10 flex items-center gap-1.5 rounded-full bg-black/55 backdrop-blur-md px-3 py-2 text-white/90 text-xs font-semibold border border-white/15 active:scale-95 transition-transform"
-          >
-            <span aria-hidden="true">🔇</span>
-            <span>Tap for sound</span>
-          </button>
-        )}
       </div>
     </div>
   );
