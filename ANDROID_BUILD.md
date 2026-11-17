@@ -89,7 +89,7 @@ which made the preloader play silently on phones. `MainActivity.java` disables t
 @Override
 public void onCreate(Bundle savedInstanceState) {
   super.onCreate(savedInstanceState);
-  applyAlwaysSound(); // setMediaPlaybackRequiresUserAction(false)
+  applyAlwaysSound(); // setMediaPlaybackRequiresUserGesture(false)
 }
 ```
 

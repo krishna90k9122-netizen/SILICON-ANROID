@@ -11,7 +11,7 @@ public class MainActivity extends BridgeActivity {
   }
 
   @Override
-  protected void onResume() {
+  public void onResume() {
     super.onResume();
     applyAlwaysSound();
   }
@@ -19,12 +19,12 @@ public class MainActivity extends BridgeActivity {
   /**
    * Allow media (the splash preloader video) to autoplay WITH sound — no tap
    * required. Android WebView blocks audible autoplay by default
-   * (mediaPlaybackRequiresUserAction = true), which made the preloader play
-   * silently on phones. Disabling it makes the sound play on every launch.
+   * (requiresUserGesture = true), which made the preloader play silently on
+   * phones. Disabling it makes the sound play on every launch.
    */
   private void applyAlwaysSound() {
     if (getBridge() != null && getBridge().getWebView() != null) {
-      getBridge().getWebView().getSettings().setMediaPlaybackRequiresUserAction(false);
+      getBridge().getWebView().getSettings().setMediaPlaybackRequiresUserGesture(false);
     }
   }
 }
