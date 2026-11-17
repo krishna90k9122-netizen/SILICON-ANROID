@@ -1,0 +1,12 @@
+{
+  "appId": "io.driftlens.q",
+  "appName": "DRIFTLENS-Q",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "backgroundColor": "#102438",
+    "allowMixedContent": false
+  }
+}

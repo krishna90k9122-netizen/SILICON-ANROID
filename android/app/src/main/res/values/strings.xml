@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">DRIFTLENS-Q</string>
+    <string name="title_activity_main">DRIFTLENS-Q</string>
+    <string name="package_name">io.driftlens.q</string>
+    <string name="custom_url_scheme">io.driftlens.q</string>
+</resources>

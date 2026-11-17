@@ -78,7 +78,28 @@ Within Android Studio:
 
 ---
 
-## 3. Safe Area & Back Navigation Compatibility
+## 3. Always-On Preloader Sound (already applied)
+
+The splash preloader video must play **with sound on every launch — no tap required**.
+Android WebView **blocks audible autoplay by default** (`mediaPlaybackRequiresUserAction = true`),
+which made the preloader play silently on phones. `MainActivity.java` disables that requirement:
+
+```java
+// android/app/src/main/java/io/driftlens/q/MainActivity.java
+@Override
+public void onCreate(Bundle savedInstanceState) {
+  super.onCreate(savedInstanceState);
+  applyAlwaysSound(); // setMediaPlaybackRequiresUserAction(false)
+}
+```
+
+> **Web (Vercel) note:** browsers still require the first interaction before sound
+> (autoplay policy) — that is a platform rule. The **APK built from this project is the
+> guaranteed always-sound build**: every launch, sound plays without any tap.
+
+---
+
+## 4. Safe Area & Back Navigation Compatibility
 
 The frontend has already implemented:
 - `viewport-fit=cover` in `index.html`
