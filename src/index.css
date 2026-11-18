@@ -96,3 +96,16 @@ html, body {
 .interactive-card:active {
   transform: scale(0.985);
 }
+
+/* ── Splash video: never show Android's native gray "play" placeholder ── */
+video {
+  background-color: #000;
+}
+/* Hide any native media controls/overlay WebView may inject */
+video::-webkit-media-controls,
+video::-webkit-media-controls-enclosure,
+video::-webkit-media-controls-overlay-play-button {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+}

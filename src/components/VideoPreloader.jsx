@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useCallback } from 'react';
 // Import the preloader video (folder name is literally "vidio").
 import preloaderVideo from '../vidio/splash-nostar.mp4';
+// First frame of the video — shown instantly while the video decoder starts,
+// replacing Android's native gray "play" placeholder on app launch.
+import preloaderPoster from '../vidio/splash-poster.jpg';
 
 // How long the splash video stays up before the home page opens (ms).
 const DURATION = 8000;
@@ -90,11 +93,12 @@ const VideoPreloader = ({ onFinished }) => {
         <video
           ref={videoRef}
           src={preloaderVideo}
+          poster={preloaderPoster}
           autoPlay
           playsInline
           loop
           preload="auto"
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover bg-black"
         />
       </div>
     </div>
